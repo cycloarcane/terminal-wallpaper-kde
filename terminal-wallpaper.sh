@@ -27,83 +27,94 @@ HTML_TEMPLATE = """
             width: 100vw;
             height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
         }
-	pre {
-            margin: 0;
-            padding: 20px;
-            white-space: pre;
-            font-family: 'DejaVu Sans Mono', 'Courier New', monospace;
-            font-size: min(2.5vh, 1.2vw);  /* Slightly increased base font size */
-            line-height: 1.2;
-            transform-origin: center;
-            transform: scale(1);
+        #container {
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: flex-start;  /* Align content to the start */
-            align-items: flex-start;      /* Align content to the top */
-            box-sizing: border-box;       /* Include padding in size calculation */
-        }    </style>
+            position: relative;
+            overflow: hidden; 
+            margin: 0;
+            padding: 0;
+        }
+        pre {
+            margin: 0;
+            padding: 0;
+            font-family: 'DejaVu Sans Mono', 'Courier New', monospace;
+            /* Set a base font size that’s easy to read. Adjust as desired. */
+            font-size: 16px; 
+            line-height: 1.2;
+            /* Let the text fill #container—no transform scaling. */
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <pre id="output"></pre>
+    </div>
+
     <script>
+        // Poll for new output
         function updateOutput() {
             fetch('/output')
                 .then(response => response.text())
                 .then(data => {
-                    document.getElementById('output').innerHTML = data;
+                    document.getElementById('output').textContent = data;
                 });
         }
-        
+
+        // Measure how many rows/columns fit in #container, then send to server
         function updateSize() {
-            const pre = document.querySelector('pre');
+            const container = document.getElementById('container');
+            const pre = document.getElementById('output');
+
+            // We can do a test character measure to see exact char width/height
             const testSpan = document.createElement('span');
-            testSpan.style.font = window.getComputedStyle(pre).font;
             testSpan.textContent = 'X';
-            document.body.appendChild(testSpan);
-            const charWidth = testSpan.getBoundingClientRect().width;
-            const charHeight = testSpan.getBoundingClientRect().height;
-            document.body.removeChild(testSpan);
-            
-            // Calculate optimal size based on screen dimensions
-            const targetWidth = window.innerWidth * 0.95;  // Use 95% of screen width
-            const targetHeight = window.innerHeight * 0.95;  // Use 95% of screen height
-            
-            const cols = Math.floor(targetWidth / charWidth);
-            const rows = Math.floor(targetHeight / charHeight);
-            
-            // Adjust font size if needed
-            const scale = Math.min(
-                targetWidth / (cols * charWidth),
-                targetHeight / (rows * charHeight)
-            );
-            pre.style.transform = `scale(${scale})`;
-            
+            testSpan.style.visibility = 'hidden';
+            pre.appendChild(testSpan);
+            const rect = testSpan.getBoundingClientRect();
+            pre.removeChild(testSpan);
+
+            // Each char's width & height
+            const charWidth = rect.width;
+            const charHeight = rect.height;
+
+            // How many columns/rows fit within container
+            const usableWidth = container.clientWidth;
+            const usableHeight = container.clientHeight;
+            const cols = Math.floor(usableWidth / charWidth);
+            const rows = Math.floor(usableHeight / charHeight);
+
+            // Send new rows/cols to server to resize tmux
             fetch('/resize', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ rows, cols })
+            })
+            .then(() => {
+                // (Optional) You can immediately refresh output if you want
+                updateOutput();
             });
         }
-        
-        // Update size on load and resize
-        window.addEventListener('load', updateSize);
+
+        function init() {
+            updateSize();
+            updateOutput();
+            // Poll the output every couple seconds
+            setInterval(updateOutput, 2000);
+        }
+
+        window.addEventListener('load', init);
         window.addEventListener('resize', updateSize);
-        
-        // Update content regularly
-        setInterval(updateOutput, 300);
     </script>
-</head>
-<body>
-    <pre id="output"></pre>
 </body>
 </html>
+
 """
 
 # Store current terminal size
-term_size = {'rows': 30, 'cols': 120}  # Increased default size
+term_size = {'rows': 60, 'cols': 240}  # Increased default size
 
 def clean_ansi(text):
     """Remove ANSI escape sequences"""
@@ -193,7 +204,11 @@ def run_command(command):
 
 @app.route('/')
 def index():
+    print("Template update test")  # Add this line
     return render_template_string(HTML_TEMPLATE)
+
+
+
 
 @app.route('/output')
 def output():
@@ -205,7 +220,7 @@ def resize():
     from flask import request, jsonify
     
     data = request.json
-    term_size['rows'] = max(30, min(data.get('rows', 30), 200))
+    term_size['rows'] = max(60, min(data.get('rows', 60), 200))
     term_size['cols'] = max(120, min(data.get('cols', 120), 300))
     return jsonify({'status': 'ok'})
 
