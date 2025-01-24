@@ -10,7 +10,54 @@ A simple way to use **KDE Window Rules** and the **Kitty terminal** to display d
 - Automatically starts on login (via `.xprofile` on X11, KDE Autostart for Wayland users).
 - Works with any terminal-friendly application (e.g., `cmatrix`, `neofetch`, `htop`).
 
+## Requirements
+
+Ensure you have the following dependencies installed:
+
+- **Kitty** - A fast, feature-rich, GPU-based terminal emulator.
+- **xwinwrap** - A utility that allows windows to be embedded as desktop backgrounds.
+
+You can install them on Arch Linux using:
+
+```bash
+sudo pacman -S kitty
+paru -S xwinwrap  # or other AUR helper
+```
+
 ## Installation
+
+### Example Script Usage
+
+An example script `terminal-wallpaper.sh` is provided to simplify setup. This script starts the terminal wallpaper and supports multiple monitors.
+
+#### Running the Script Manually
+
+To start the wallpaper manually, run:
+
+```bash
+./terminal-wallpaper.sh &
+```
+
+#### Setting Up Autostart
+
+To run the script at login, follow the appropriate method for your system:
+
+- **For X11 Users**: Add the script to `~/.xprofile`:
+
+  ```bash
+  echo '~/path/to/terminal-wallpaper.sh &' >> ~/.xprofile
+  ```
+
+- **For Wayland Users**: Add the script to KDE's Autostart:
+
+  - Open **System Settings** > **Startup and Shutdown** > **Autostart**.
+  - Click **Add...** and select the `terminal-wallpaper.sh` file.
+
+Ensure the script has executable permissions:
+
+```bash
+chmod +x terminal-wallpaper.sh
+```
 
 ### 1. Set Up KDE Window Rules
 
@@ -50,7 +97,6 @@ Use KDE's built-in **Autostart**:
 - Change the terminal output (e.g., use `cmatrix`, `btop`, `neofetch`).
 - Modify the transparency settings in your terminal emulator for better visibility.
 - Adjust the KDE Window Rules to fine-tune the appearance.
-- Check out the funcommands file for a few examples
 
 ## Troubleshooting
 
