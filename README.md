@@ -50,6 +50,7 @@ Use KDE's built-in **Autostart**:
 - Change the terminal output (e.g., use `cmatrix`, `btop`, `neofetch`).
 - Modify the transparency settings in your terminal emulator for better visibility.
 - Adjust the KDE Window Rules to fine-tune the appearance.
+- Check out the funcommands file for a few examples
 
 ## Troubleshooting
 
