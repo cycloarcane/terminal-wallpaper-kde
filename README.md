@@ -21,7 +21,7 @@ You can install them on Arch Linux using:
 
 ```bash
 sudo pacman -S kitty
-paru -S xwinwrap  # or other AUR helper
+yay -S shantz-xwinwrap-bzr  # or other AUR helper
 ```
 
 ## Installation
@@ -97,6 +97,7 @@ Use KDE's built-in **Autostart**:
 - Change the terminal output (e.g., use `cmatrix`, `btop`, `neofetch`).
 - Modify the transparency settings in your terminal emulator for better visibility.
 - Adjust the KDE Window Rules to fine-tune the appearance.
+- Check out the funcommands.txt document for some examples.
 
 ## Troubleshooting
 
